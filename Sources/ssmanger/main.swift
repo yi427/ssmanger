@@ -21,6 +21,8 @@ struct SSManager {
             ServiceManager.execute(command, service: service)
         case "list":
             ServiceManager.listAll()
+        case "help":
+            printUsage()
         default:
             print("错误: 未知命令 '\(command)'")
             printUsage()

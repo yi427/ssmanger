@@ -54,15 +54,6 @@ struct TableRenderer {
         let runningCount = services.filter { $0.isRunning }.count
         let totalCount = services.count
 
-        let green = "\u{001B}[92m"
-        let cyan = "\u{001B}[96m"
-        let bold = "\u{001B}[1m"
-        let reset = "\u{001B}[0m"
-        let blue = "\u{001B}[94m"
-        let red = "\u{001B}[91m"
-        let gray = "\u{001B}[90m"
-        let magenta = "\u{001B}[95m"
-
         guard currentPage < pages.count else { return }
         let page = pages[currentPage]
 
@@ -72,28 +63,28 @@ struct TableRenderer {
         let tableWidth = col0Width + col1Width + col2Width + 10
 
         let headerBorder = String(repeating: "═", count: tableWidth)
-        print("\n\(bold)\(blue)╔\(headerBorder)╗\(reset)")
+        print("\n" + "╔\(headerBorder)╗".styled(ANSIColor.bold, ANSIColor.blue))
 
         let title = "⚡ System Service Manager"
         let titlePadding = String(repeating: " ", count: tableWidth - title.count - 3)
-        print("\(bold)\(blue)║\(reset)  \(bold)\(magenta)\(title)\(reset)\(titlePadding)\(bold)\(blue)║\(reset)")
+        print("║".styled(ANSIColor.bold, ANSIColor.blue) + "  " + title.styled(ANSIColor.bold, ANSIColor.magenta) + titlePadding + "║".styled(ANSIColor.bold, ANSIColor.blue))
 
-        print("\(bold)\(blue)╠\(headerBorder)╣\(reset)")
+        print("╠\(headerBorder)╣".styled(ANSIColor.bold, ANSIColor.blue))
 
         let statsLine = "Total \(totalCount) services  │  ✓ \(runningCount) Running  │  ✗ \(totalCount - runningCount) Stopped"
         let statsPadding = String(repeating: " ", count: tableWidth - statsLine.count - 2)
-        print("\(bold)\(blue)║\(reset)  \(cyan)\(statsLine)\(reset)\(statsPadding)\(bold)\(blue)║\(reset)")
+        print("║".styled(ANSIColor.bold, ANSIColor.blue) + "  " + statsLine.cyan + statsPadding + "║".styled(ANSIColor.bold, ANSIColor.blue))
 
-        print("\(bold)\(blue)╚\(headerBorder)╝\(reset)\n")
+        print("╚\(headerBorder)╝".styled(ANSIColor.bold, ANSIColor.blue) + "\n")
 
-        print("\(bold)\(cyan)╭\(String(repeating: "─", count: col0Width + 2))┬\(String(repeating: "─", count: col1Width + 2))┬\(String(repeating: "─", count: col2Width + 2))╮\(reset)")
+        print("╭\(String(repeating: "─", count: col0Width + 2))┬\(String(repeating: "─", count: col1Width + 2))┬\(String(repeating: "─", count: col2Width + 2))╮".styled(ANSIColor.bold, ANSIColor.cyan))
 
         let header0 = "PID".padding(toLength: col0Width, withPad: " ", startingAt: 0)
         let header1 = "Status".padding(toLength: col1Width, withPad: " ", startingAt: 0)
         let header2 = "Service Name".padding(toLength: col2Width, withPad: " ", startingAt: 0)
-        print("\(bold)\(cyan)│\(reset) \(bold)\(header0)\(reset) \(bold)\(cyan)│\(reset) \(bold)\(header1)\(reset) \(bold)\(cyan)│\(reset) \(bold)\(header2)\(reset) \(bold)\(cyan)│\(reset)")
+        print("│".styled(ANSIColor.bold, ANSIColor.cyan) + " " + header0.bold + " " + "│".styled(ANSIColor.bold, ANSIColor.cyan) + " " + header1.bold + " " + "│".styled(ANSIColor.bold, ANSIColor.cyan) + " " + header2.bold + " " + "│".styled(ANSIColor.bold, ANSIColor.cyan))
 
-        print("\(bold)\(cyan)├\(String(repeating: "─", count: col0Width + 2))┼\(String(repeating: "─", count: col1Width + 2))┼\(String(repeating: "─", count: col2Width + 2))┤\(reset)")
+        print("├\(String(repeating: "─", count: col0Width + 2))┼\(String(repeating: "─", count: col1Width + 2))┼\(String(repeating: "─", count: col2Width + 2))┤".styled(ANSIColor.bold, ANSIColor.cyan))
 
         for service in page {
             let pid = service.pid.padding(toLength: col0Width, withPad: " ", startingAt: 0)
@@ -105,15 +96,15 @@ struct TableRenderer {
             }
             label = label.padding(toLength: col2Width - 2, withPad: " ", startingAt: 0)
 
-            let statusIcon = service.isRunning ? "\(green)✓\(reset)" : "\(red)✗\(reset)"
-            let pidColor = service.isRunning ? green : gray
+            let statusIcon = service.isRunning ? "✓".green : "✗".red
+            let pidColor = service.isRunning ? pid.styled(ANSIColor.green) : pid.gray
 
-            print("\(cyan)│\(reset) \(pidColor)\(pid)\(reset) \(cyan)│\(reset) \(status) \(cyan)│\(reset) \(statusIcon) \(label) \(cyan)│\(reset)")
+            print("│".cyan + " " + pidColor + " " + "│".cyan + " " + status + " " + "│".cyan + " " + statusIcon + " " + label + " " + "│".cyan)
         }
 
-        print("\(bold)\(cyan)╰\(String(repeating: "─", count: col0Width + 2))┴\(String(repeating: "─", count: col1Width + 2))┴\(String(repeating: "─", count: col2Width + 2))╯\(reset)")
+        print("╰\(String(repeating: "─", count: col0Width + 2))┴\(String(repeating: "─", count: col1Width + 2))┴\(String(repeating: "─", count: col2Width + 2))╯".styled(ANSIColor.bold, ANSIColor.cyan))
 
-        print("\n  \(gray)[\(reset)\(bold)\(magenta)\(currentPage + 1)\(reset)\(gray)/\(reset)\(pages.count)\(gray)]\(reset)  \(blue)↑\(reset)/\(blue)k\(reset) Prev  \(blue)↓\(reset)/\(blue)j\(reset) Next  \(red)q\(reset) Quit")
+        print("\n  " + "[\(currentPage + 1)/\(pages.count)]".styled(ANSIColor.gray) + "  " + "↑".blue + "/" + "k".blue + " Prev  " + "↓".blue + "/" + "j".blue + " Next  " + "q".red + " Quit")
     }
 
     private static func readKey() -> String? {
