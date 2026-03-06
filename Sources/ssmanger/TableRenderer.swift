@@ -4,7 +4,7 @@ struct TableRenderer {
     static let pageSize = 20
 
     static func renderServicesTable(_ services: [Service]) {
-        let pages = services.chunked(into: pageSize)
+        var searchQuery = ""
         var currentPage = 0
         var originalTermios: termios?
 
@@ -22,8 +22,17 @@ struct TableRenderer {
 
         var shouldContinue = true
         while shouldContinue {
+            let filteredServices = searchQuery.isEmpty ? services : services.filter {
+                $0.label.lowercased().contains(searchQuery.lowercased())
+            }
+            let pages = filteredServices.chunked(into: pageSize)
+
+            if currentPage >= pages.count && !pages.isEmpty {
+                currentPage = pages.count - 1
+            }
+
             clearScreen()
-            printPage(services, pages: pages, currentPage: currentPage)
+            printPage(filteredServices, pages: pages, currentPage: currentPage, searchQuery: searchQuery)
 
             if let key = readKey() {
                 switch key {
@@ -37,6 +46,17 @@ struct TableRenderer {
                     if currentPage > 0 {
                         currentPage -= 1
                     }
+                case "/":
+                    if var term = originalTermios {
+                        tcsetattr(STDIN_FILENO, TCSANOW, &term)
+                    }
+                    searchQuery = promptSearch()
+                    currentPage = 0
+                    term.c_lflag &= ~(UInt(ECHO | ICANON))
+                    tcsetattr(STDIN_FILENO, TCSANOW, &term)
+                case "\u{1B}":
+                    searchQuery = ""
+                    currentPage = 0
                 default:
                     break
                 }
@@ -44,18 +64,29 @@ struct TableRenderer {
         }
         clearScreen()
     }
-
     private static func clearScreen() {
         print("\u{001B}[2J\u{001B}[H", terminator: "")
         fflush(stdout)
     }
 
-    private static func printPage(_ services: [Service], pages: [[Service]], currentPage: Int) {
+    private static func promptSearch() -> String {
+        print("\n  Search: ", terminator: "")
+        fflush(stdout)
+        return readLine() ?? ""
+    }
+
+    private static func readKey() -> String? {
+        var buffer = [UInt8](repeating: 0, count: 3)
+        let count = read(STDIN_FILENO, &buffer, 3)
+        guard count > 0 else { return nil }
+        return String(bytes: buffer[0..<count], encoding: .utf8)
+    }
+
+    private static func printPage(_ services: [Service], pages: [[Service]], currentPage: Int, searchQuery: String) {
         let runningCount = services.filter { $0.isRunning }.count
         let totalCount = services.count
 
-        guard currentPage < pages.count else { return }
-        let page = pages[currentPage]
+        let page = (currentPage < pages.count && !pages.isEmpty) ? pages[currentPage] : []
 
         let col0Width = max(8, page.map { $0.pid.count }.max() ?? 0)
         let col1Width = max(8, page.map { $0.status.count }.max() ?? 0)
@@ -76,7 +107,6 @@ struct TableRenderer {
         print("║".styled(ANSIColor.bold, ANSIColor.blue) + "  " + statsLine.cyan + statsPadding + "║".styled(ANSIColor.bold, ANSIColor.blue))
 
         print("╚\(headerBorder)╝".styled(ANSIColor.bold, ANSIColor.blue) + "\n")
-
         print("╭\(String(repeating: "─", count: col0Width + 2))┬\(String(repeating: "─", count: col1Width + 2))┬\(String(repeating: "─", count: col2Width + 2))╮".styled(ANSIColor.bold, ANSIColor.cyan))
 
         let header0 = "PID".padding(toLength: col0Width, withPad: " ", startingAt: 0)
@@ -86,32 +116,31 @@ struct TableRenderer {
 
         print("├\(String(repeating: "─", count: col0Width + 2))┼\(String(repeating: "─", count: col1Width + 2))┼\(String(repeating: "─", count: col2Width + 2))┤".styled(ANSIColor.bold, ANSIColor.cyan))
 
-        for service in page {
-            let pid = service.pid.padding(toLength: col0Width, withPad: " ", startingAt: 0)
-            let status = service.status.padding(toLength: col1Width, withPad: " ", startingAt: 0)
+        if !pages.isEmpty && currentPage < pages.count {
+            let page = pages[currentPage]
 
-            var label = service.label
-            if label.count > col2Width - 2 {
-                label = String(label.prefix(col2Width - 5)) + "..."
+
+            for service in page {
+                let pid = service.pid.padding(toLength: col0Width, withPad: " ", startingAt: 0)
+                let status = service.status.padding(toLength: col1Width, withPad: " ", startingAt: 0)
+
+                var label = service.label
+                if label.count > col2Width - 2 {
+                    label = String(label.prefix(col2Width - 5)) + "..."
+                }
+                label = label.padding(toLength: col2Width - 2, withPad: " ", startingAt: 0)
+
+                let statusIcon = service.isRunning ? "✓".green : "✗".red
+                let pidColor = service.isRunning ? pid.styled(ANSIColor.green) : pid.gray
+
+                print("│".cyan + " " + pidColor + " " + "│".cyan + " " + status + " " + "│".cyan + " " + statusIcon + " " + label + " " + "│".cyan)
             }
-            label = label.padding(toLength: col2Width - 2, withPad: " ", startingAt: 0)
-
-            let statusIcon = service.isRunning ? "✓".green : "✗".red
-            let pidColor = service.isRunning ? pid.styled(ANSIColor.green) : pid.gray
-
-            print("│".cyan + " " + pidColor + " " + "│".cyan + " " + status + " " + "│".cyan + " " + statusIcon + " " + label + " " + "│".cyan)
         }
 
         print("╰\(String(repeating: "─", count: col0Width + 2))┴\(String(repeating: "─", count: col1Width + 2))┴\(String(repeating: "─", count: col2Width + 2))╯".styled(ANSIColor.bold, ANSIColor.cyan))
 
-        print("\n  " + "[\(currentPage + 1)/\(pages.count)]".styled(ANSIColor.gray) + "  " + "↑".blue + "/" + "k".blue + " Prev  " + "↓".blue + "/" + "j".blue + " Next  " + "q".red + " Quit")
-    }
-
-    private static func readKey() -> String? {
-        var buffer = [UInt8](repeating: 0, count: 3)
-        let count = read(STDIN_FILENO, &buffer, 3)
-        guard count > 0 else { return nil }
-        return String(bytes: buffer[0..<count], encoding: .utf8)
+        let searchInfo = searchQuery.isEmpty ? "" : "  Search: \"\(searchQuery)\"".styled(ANSIColor.magenta)
+        print("\n  " + "[\(currentPage + 1)/\(pages.count)]".styled(ANSIColor.gray) + searchInfo + "  " + "↑".blue + "/" + "k".blue + " Prev  " + "↓".blue + "/" + "j".blue + " Next  " + "/".magenta + " Search  " + "ESC".gray + " Clear  " + "q".red + " Quit")
     }
 }
 
