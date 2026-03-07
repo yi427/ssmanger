@@ -18,6 +18,14 @@ struct StatusRenderer {
             printRow("Program", program)
         }
 
+        if let stdOut = detail.standardOutPath {
+            printRow("StdOut", stdOut)
+        }
+
+        if let stdErr = detail.standardErrorPath {
+            printRow("StdErr", stdErr)
+        }
+
         print("╚══════════════════════════════════════════════════════╝".styled(ANSIColor.bold, ANSIColor.blue) + "\n")
     }
 
