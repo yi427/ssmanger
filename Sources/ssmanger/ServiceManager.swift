@@ -52,10 +52,27 @@ struct ServiceManager {
         }
     }
 
+    private static func expandPath(_ path: String) -> String {
+        guard path.hasPrefix("~") else {
+            return path
+        }
+
+        if let sudoUser = ProcessInfo.processInfo.environment["SUDO_USER"] {
+            return path.replacingOccurrences(of: "~", with: "/Users/\(sudoUser)")
+        }
+
+        return NSString(string: path).expandingTildeInPath
+    }
+
     static func listAll() {
         let output = runLaunchctlWithOutput(["list"])
         let services = parseServices(from: output)
         TableRenderer.renderServicesTable(services)
+    }
+
+    static func addService(_ service: String) {
+        let plistPath = getServicePath(service)
+        ServiceCreator.create(service: service, plistPath: plistPath, expandPath: expandPath)
     }
 
     private static func showStatus(_ service: String) {

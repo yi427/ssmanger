@@ -21,6 +21,13 @@ struct SSManager {
             ServiceManager.execute(command, service: service)
         case "list":
             ServiceManager.listAll()
+        case "add":
+            guard args.count >= 3 else {
+                print("错误: 需要指定服务名称")
+                exit(1)
+            }
+            let service = args[2]
+            ServiceManager.addService(service)
         case "help":
             printUsage()
         default:
@@ -40,6 +47,7 @@ struct SSManager {
           restart <service>  重启服务
           status <service>   查看服务状态
           list               列出所有服务
+          add <service>      添加新服务
         """)
     }
 }

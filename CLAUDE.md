@@ -16,8 +16,9 @@ Sources/ssmanger/
 │   ├── Service.swift      # Service list model
 │   └── ServiceDetail.swift # Detailed service information model
 └── Renderer/
-    ├── TableRenderer.swift  # Interactive service list UI
-    └── StatusRenderer.swift # Service status detail UI
+    ├── TableRenderer.swift   # Interactive service list UI
+    ├── StatusRenderer.swift  # Service status detail UI
+    └── ServiceCreator.swift  # Interactive service creation UI
 ```
 
 ## Key Design Decisions
@@ -61,6 +62,25 @@ The tool automatically detects execution context and adjusts behavior:
 - `isRoot()` checks `getuid() == 0`
 - `getDomainTarget()` returns domain for bootstrap/bootout
 - `getServiceTarget()` returns full service path for bootout/kickstart
+
+### Service Creation (add command)
+Interactive plist file generation with `ServiceCreator`:
+
+**Features**:
+- Prompts for program path, arguments, and log paths
+- Handles `~` path expansion correctly in sudo context
+- Supports separate stdout/stderr log paths
+- Generates properly formatted plist XML
+
+**Path Expansion**:
+- Detects `SUDO_USER` environment variable
+- Expands `~` to actual user's home directory, not root's
+- Prevents `/var/root` paths when using sudo
+
+**Generated plist includes**:
+- Label, ProgramArguments (required)
+- RunAtLoad, KeepAlive (default: true)
+- StandardOutPath, StandardErrorPath (optional)
 
 ## Development Guidelines
 
