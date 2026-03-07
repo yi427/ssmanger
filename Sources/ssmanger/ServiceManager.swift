@@ -6,22 +6,35 @@ struct ServiceManager {
         switch command {
         case "start":
             args = ["load", "\(NSHomeDirectory())/Library/LaunchAgents/\(service).plist"]
+            runLaunchctl(args)
         case "stop":
             args = ["unload", "\(NSHomeDirectory())/Library/LaunchAgents/\(service).plist"]
+            runLaunchctl(args)
         case "restart":
             args = ["kickstart", "-k", "gui/\(getuid())/\(service)"]
+            runLaunchctl(args)
         case "status":
-            args = ["list", service]
+            showStatus(service)
         default:
             return
         }
-        runLaunchctl(args)
     }
 
     static func listAll() {
         let output = runLaunchctlWithOutput(["list"])
         let services = parseServices(from: output)
         TableRenderer.renderServicesTable(services)
+    }
+
+    private static func showStatus(_ service: String) {
+        let output = runLaunchctlWithOutput(["list", service])
+
+        guard let detail = ServiceDetail.parse(from: output) else {
+            print("Service not found: \(service)".red)
+            return
+        }
+
+        StatusRenderer.render(detail)
     }
 
     private static func parseServices(from output: String) -> [Service] {

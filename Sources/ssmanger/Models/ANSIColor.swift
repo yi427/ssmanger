@@ -31,4 +31,16 @@ extension String {
     var gray: String { styled(ANSIColor.gray) }
     var magenta: String { styled(ANSIColor.magenta) }
     var bold: String { styled(ANSIColor.bold) }
+
+    var visibleLength: Int {
+        let pattern = "\u{001B}\\[[0-9;]*m"
+        let stripped = self.replacingOccurrences(of: pattern, with: "", options: .regularExpression)
+        return stripped.count
+    }
+
+    func paddedToWidth(_ width: Int) -> String {
+        let visible = self.visibleLength
+        let padding = max(0, width - visible)
+        return self + String(repeating: " ", count: padding)
+    }
 }

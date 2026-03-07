@@ -39,7 +39,7 @@ struct SSManager {
           stop <service>     停止服务
           restart <service>  重启服务
           status <service>   查看服务状态
-          list              列出所有服务
+          list               列出所有服务
         """)
     }
 }
