@@ -72,7 +72,7 @@ struct ServiceManager {
 
     static func addService(_ service: String) {
         let plistPath = getServicePath(service)
-        ServiceCreator.create(service: service, plistPath: plistPath, expandPath: expandPath)
+        let _ = ServiceCreator.create(service: service, plistPath: plistPath, expandPath: expandPath)
     }
 
     private static func showStatus(_ service: String) {

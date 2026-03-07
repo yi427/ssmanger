@@ -1,37 +1,56 @@
 import Foundation
 
 struct ServiceCreator {
-    static func create(service: String, plistPath: String, expandPath: (String) -> String) {
-        print("\n" + "创建新服务: \(service)".bold.cyan)
-        print("─────────────────────────────────────\n".cyan)
+    static func create(service: String, plistPath: String, expandPath: (String) -> String) -> Bool {
+        printHeader(service)
 
-        print("程序路径: ".bold, terminator: "")
-        guard let programInput = readLine(), !programInput.isEmpty else {
-            print("错误: 程序路径不能为空".red)
-            return
+        guard let programInput = promptRequired("Program Path") else {
+            return false
         }
-
         let program = expandPath(programInput)
 
-        print("程序参数 (可选，多个参数用空格分隔): ".bold, terminator: "")
-        let argsInput = readLine() ?? ""
-
-        print("标准输出日志路径 (可选): ".bold, terminator: "")
-        let stdOutInput = readLine() ?? ""
+        let argsInput = promptOptional("Program Arguments", hint: "space-separated")
+        let stdOutInput = promptOptional("Stdout Log Path")
         let stdOutPath = stdOutInput.isEmpty ? nil : expandPath(stdOutInput)
 
-        print("标准错误日志路径 (可选，留空则与标准输出相同): ".bold, terminator: "")
-        let stdErrInput = readLine() ?? ""
+        let stdErrInput = promptOptional("Stderr Log Path", hint: "leave empty to use stdout path")
         let stdErrPath = stdErrInput.isEmpty ? stdOutPath : expandPath(stdErrInput)
 
         let plistContent = generatePlist(label: service, program: program, args: argsInput, stdOutPath: stdOutPath, stdErrPath: stdErrPath)
 
         do {
             try plistContent.write(toFile: plistPath, atomically: true, encoding: .utf8)
-            print("\n" + "✓ 服务创建成功: \(plistPath)".green)
+            print("\n" + "✓ Service created successfully".green)
+            print("  " + "Location: \(plistPath)".gray)
+            return true
         } catch {
-            print("\n" + "✗ 创建失败: \(error.localizedDescription)".red)
+            print("\n" + "✗ Failed to create service: \(error.localizedDescription)".red)
+            return false
         }
+    }
+
+    private static func printHeader(_ service: String) {
+        print("\n" + "╭─────────────────────────────────────╮".cyan)
+        print("│".cyan + "  " + "Create New Service".bold + "                 " + "│".cyan)
+        print("│".cyan + "  " + service.magenta + String(repeating: " ", count: 35 - service.count) + "│".cyan)
+        print("╰─────────────────────────────────────╯".cyan + "\n")
+    }
+
+    private static func promptRequired(_ label: String) -> String? {
+        print("  " + "▸".cyan + " " + label.bold + " " + "(required)".gray)
+        print("    ", terminator: "")
+        guard let input = readLine(), !input.isEmpty else {
+            print("    " + "✗ This field is required".red)
+            return nil
+        }
+        return input
+    }
+
+    private static func promptOptional(_ label: String, hint: String? = nil) -> String {
+        let hintText = hint.map { " (\($0))" } ?? ""
+        print("  " + "▸".cyan + " " + label.bold + hintText.gray)
+        print("    ", terminator: "")
+        return readLine() ?? ""
     }
 
     private static func generatePlist(label: String, program: String, args: String, stdOutPath: String?, stdErrPath: String?) -> String {
