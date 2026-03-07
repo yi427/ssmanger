@@ -3,20 +3,52 @@ import Foundation
 struct ServiceManager {
     static func execute(_ command: String, service: String) {
         let args: [String]
+        let plistPath = getServicePath(service)
+        let domainTarget = getDomainTarget()
+        let serviceTarget = getServiceTarget(service)
+
         switch command {
         case "start":
-            args = ["load", "\(NSHomeDirectory())/Library/LaunchAgents/\(service).plist"]
+            args = ["bootstrap", domainTarget, plistPath]
             runLaunchctl(args)
         case "stop":
-            args = ["unload", "\(NSHomeDirectory())/Library/LaunchAgents/\(service).plist"]
+            args = ["bootout", serviceTarget]
             runLaunchctl(args)
         case "restart":
-            args = ["kickstart", "-k", "gui/\(getuid())/\(service)"]
+            args = ["kickstart", "-k", serviceTarget]
             runLaunchctl(args)
         case "status":
             showStatus(service)
         default:
             return
+        }
+    }
+
+    private static func isRoot() -> Bool {
+        return getuid() == 0
+    }
+
+    private static func getServicePath(_ service: String) -> String {
+        if isRoot() {
+            return "/Library/LaunchDaemons/\(service).plist"
+        } else {
+            return "\(NSHomeDirectory())/Library/LaunchAgents/\(service).plist"
+        }
+    }
+
+    private static func getDomainTarget() -> String {
+        if isRoot() {
+            return "system"
+        } else {
+            return "gui/\(getuid())"
+        }
+    }
+
+    private static func getServiceTarget(_ service: String) -> String {
+        if isRoot() {
+            return "system/\(service)"
+        } else {
+            return "gui/\(getuid())/\(service)"
         }
     }
 
