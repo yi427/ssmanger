@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-A Swift-based CLI tool for managing macOS LaunchAgent services. Provides a modern, colorful interface as a simplified alternative to `launchctl`.
+A Swift-based CLI tool for managing macOS LaunchAgent and LaunchDaemon services. Provides a modern, colorful interface as a simplified alternative to `launchctl`. Supports both regular user and root (sudo) modes.
 
 ## Architecture
 
@@ -38,6 +38,29 @@ The project uses ANSI escape sequences for terminal colors. A critical challenge
 
 ### Service Information Parsing
 LaunchAgent services output plist-format data. `ServiceDetail.parse()` extracts key-value pairs from `launchctl list <service>` output.
+
+### Privilege Detection and Path Management
+The tool automatically detects execution context and adjusts behavior:
+
+**Root Mode (sudo)**:
+- Operates on `/Library/LaunchDaemons/`
+- Uses `system` domain-target
+- Uses `system/<service>` service-target
+
+**User Mode**:
+- Operates on `~/Library/LaunchAgents/`
+- Uses `gui/<uid>` domain-target
+- Uses `gui/<uid>/<service>` service-target
+
+**Modern launchctl Commands**:
+- `bootstrap` for starting services (replaces deprecated `load`)
+- `bootout` for stopping services (replaces deprecated `unload`)
+- `kickstart -k` for restarting services
+
+**Key Implementation**:
+- `isRoot()` checks `getuid() == 0`
+- `getDomainTarget()` returns domain for bootstrap/bootout
+- `getServiceTarget()` returns full service path for bootout/kickstart
 
 ## Development Guidelines
 
