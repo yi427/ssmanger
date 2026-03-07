@@ -65,6 +65,22 @@ ssmanger add <service-name>
 
 支持 `~` 路径展开，sudo 模式下会正确识别实际用户目录。
 
+## TODO / Roadmap
+
+### 核心功能扩展
+- [ ] **edit** - 编辑现有服务配置
+- [ ] **remove** - 删除服务及其 plist 文件
+- [ ] **logs** - 查看和跟踪服务日志
+- [ ] **validate** - 验证 plist 配置和路径
+
+### 高级功能
+- [ ] **templates** - 预定义服务模板（HTTP 服务、定时任务等）
+- [ ] **schedule** - 友好的定时任务配置（StartCalendarInterval）
+- [ ] **batch** - 批量操作和服务分组管理
+- [ ] **import/export** - 配置导入导出（JSON/YAML）
+- [ ] **health** - 服务健康检查和资源监控
+- [ ] **dependencies** - 服务依赖关系管理
+
 ## 系统要求
 
 - macOS
