@@ -12,9 +12,10 @@ Sources/ssmanger/
 ├── main.swift              # Entry point and CLI argument parsing
 ├── ServiceManager.swift    # Core service management logic
 ├── Models/
-│   ├── ANSIColor.swift    # Terminal color utilities with ANSI-aware padding
-│   ├── Service.swift      # Service list model
-│   └── ServiceDetail.swift # Detailed service information model
+│   ├── ANSIColor.swift     # Terminal color utilities with ANSI-aware padding
+│   ├── Service.swift       # Service list model
+│   ├── ServiceDetail.swift # Detailed service information model
+│   └── PlistBuilder.swift  # DSL for generating plist XML with closure-based API
 └── Renderer/
     ├── TableRenderer.swift         # Interactive service list UI
     ├── StatusRenderer.swift        # Service status detail UI
@@ -73,12 +74,28 @@ Interactive plist file generation with `ServiceCreator`:
 - Prompts for program path, arguments, and log paths
 - Handles `~` path expansion correctly in sudo context
 - Supports separate stdout/stderr log paths
-- Generates properly formatted plist XML
+- Uses `PlistBuilder` DSL for clean XML generation
 
 **Path Expansion**:
 - Detects `SUDO_USER` environment variable
 - Expands `~` to actual user's home directory, not root's
 - Prevents `/var/root` paths when using sudo
+
+**PlistBuilder DSL**:
+- Closure-based API for automatic tag management
+- Method chaining with `@discardableResult`
+- Clean, readable plist generation without manual string concatenation
+- Example:
+```swift
+PlistBuilder().header().plist(0) { b in
+    b.dict(0) { b in
+        b.key("Label", 1).string("com.example.service", 1)
+        b.key("ProgramArguments", 1).array(1) { b in
+            b.string("/usr/bin/python3", 2)
+        }
+    }
+}.build()
+```
 
 **Generated plist includes**:
 - Label, ProgramArguments (required)

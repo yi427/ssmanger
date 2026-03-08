@@ -1,7 +1,7 @@
 import Foundation
 
 struct ServiceCreator {
-    static func create(service: String, plistPath: String, expandPath: (String) -> String) -> Bool {
+    static func create(service: String, plistPath: String) -> Bool {
         printHeader(service)
 
         guard let programInput = promptRequired("Program Path") else {
@@ -29,6 +29,18 @@ struct ServiceCreator {
         }
     }
 
+    private static func expandPath(_ path: String) -> String {
+        guard path.hasPrefix("~") else {
+            return path
+        }
+
+        if let sudoUser = ProcessInfo.processInfo.environment["SUDO_USER"] {
+            return path.replacingOccurrences(of: "~", with: "/Users/\(sudoUser)")
+        }
+
+        return NSString(string: path).expandingTildeInPath
+    }
+
     private static func printHeader(_ service: String) {
         print("\n" + "╭─────────────────────────────────────╮".cyan)
         print("│".cyan + "  " + "Create New Service".bold + "                 " + "│".cyan)
@@ -54,54 +66,27 @@ struct ServiceCreator {
     }
 
     private static func generatePlist(label: String, program: String, args: String, stdOutPath: String?, stdErrPath: String?) -> String {
-        var programArgs = ["<string>\(program)</string>"]
-
-        if !args.isEmpty {
-            let argList = args.split(separator: " ").map { "<string>\($0)</string>" }
-            programArgs.append(contentsOf: argList)
+        let builder = PlistBuilder().header().plist(0) { b in
+            b.dict(0) { b in
+                b.key("Label", 1).string(label, 1)
+                b.key("ProgramArguments", 1).array(1) { b in
+                    b.string(program, 2)
+                    if !args.isEmpty {
+                        for arg in args.split(separator: " ") {
+                            b.string(expandPath(String(arg)), 2)
+                        }
+                    }
+                }
+                b.key("RunAtLoad", 1).true(1)
+                b.key("KeepAlive", 1).true(1)
+                if let stdOut = stdOutPath {
+                    b.key("StandardOutPath", 1).string(stdOut, 1)
+                }
+                if let stdErr = stdErrPath {
+                    b.key("StandardErrorPath", 1).string(stdErr, 1)
+                }
+            }
         }
-
-        let programArgsIndented = programArgs.map { "        \($0)" }.joined(separator: "\n")
-
-        var plist = """
-        <?xml version="1.0" encoding="UTF-8"?>
-        <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-        <plist version="1.0">
-        <dict>
-            <key>Label</key>
-            <string>\(label)</string>
-            <key>ProgramArguments</key>
-            <array>
-        \(programArgsIndented)
-            </array>
-            <key>RunAtLoad</key>
-            <true/>
-            <key>KeepAlive</key>
-            <true/>
-        """
-
-        if let stdOut = stdOutPath {
-            plist += """
-
-            <key>StandardOutPath</key>
-            <string>\(stdOut)</string>
-        """
-        }
-
-        if let stdErr = stdErrPath {
-            plist += """
-
-            <key>StandardErrorPath</key>
-            <string>\(stdErr)</string>
-        """
-        }
-
-        plist += """
-
-        </dict>
-        </plist>
-        """
-
-        return plist
+        return builder.build()
     }
 }

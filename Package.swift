@@ -11,5 +11,9 @@ let package = Package(
         .executableTarget(
             name: "ssmanger"
         ),
+        .testTarget(
+            name: "ssmangerTests",
+            dependencies: ["ssmanger"]
+        ),
     ]
 )
