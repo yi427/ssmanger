@@ -30,6 +30,7 @@ extension String {
     var red: String { styled(ANSIColor.red) }
     var gray: String { styled(ANSIColor.gray) }
     var magenta: String { styled(ANSIColor.magenta) }
+    var yellow: String { styled(ANSIColor.yellow) }
     var bold: String { styled(ANSIColor.bold) }
 
     var visibleLength: Int {

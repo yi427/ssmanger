@@ -28,6 +28,13 @@ struct SSManager {
             }
             let service = args[2]
             ServiceManager.addService(service)
+        case "logs":
+            guard args.count >= 3 else {
+                print("错误: 需要指定服务名称")
+                exit(1)
+            }
+            let service = args[2]
+            ServiceManager.showLogs(service)
         case "help":
             printUsage()
         default:
@@ -48,6 +55,7 @@ struct SSManager {
           status <service>   查看服务状态
           list               列出所有服务
           add <service>      添加新服务
+          logs <service>     查看服务日志
         """)
     }
 }

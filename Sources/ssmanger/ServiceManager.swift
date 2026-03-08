@@ -75,6 +75,17 @@ struct ServiceManager {
         let _ = ServiceCreator.create(service: service, plistPath: plistPath, expandPath: expandPath)
     }
 
+    static func showLogs(_ service: String) {
+        let output = runLaunchctlWithOutput(["list", service])
+
+        guard let detail = ServiceDetail.parse(from: output) else {
+            print("Service not found: \(service)".red)
+            return
+        }
+
+        LogRenderer.render(detail)
+    }
+
     private static func showStatus(_ service: String) {
         let output = runLaunchctlWithOutput(["list", service])
 

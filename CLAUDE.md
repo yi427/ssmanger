@@ -18,7 +18,8 @@ Sources/ssmanger/
 └── Renderer/
     ├── TableRenderer.swift   # Interactive service list UI
     ├── StatusRenderer.swift  # Service status detail UI
-    └── ServiceCreator.swift  # Interactive service creation UI
+    ├── ServiceCreator.swift  # Interactive service creation UI
+    └── LogRenderer.swift     # Service log display UI
 ```
 
 ## Key Design Decisions
