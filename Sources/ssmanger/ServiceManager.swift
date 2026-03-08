@@ -75,6 +75,22 @@ struct ServiceManager {
         let _ = ServiceCreator.create(service: service, plistPath: plistPath, expandPath: expandPath)
     }
 
+    static func listServices() {
+        let directory = isRoot() ? "/Library/LaunchDaemons" : "\(NSHomeDirectory())/Library/LaunchAgents"
+
+        guard let files = try? FileManager.default.contentsOfDirectory(atPath: directory) else {
+            print("Failed to read directory: \(directory)".red)
+            return
+        }
+
+        let services = files
+            .filter { $0.hasSuffix(".plist") }
+            .map { $0.replacingOccurrences(of: ".plist", with: "") }
+            .sorted()
+
+        ServiceListRenderer.render(services: services, directory: directory)
+    }
+
     static func showLogs(_ service: String) {
         let output = runLaunchctlWithOutput(["list", service])
 

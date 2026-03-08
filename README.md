@@ -26,12 +26,21 @@ cp .build/release/ssmanger /usr/local/bin/
 ssmanger list
 ```
 
+列出所有正在运行的服务。
+
 交互式操作：
 - `j` 或 `↓` - 下一页
 - `k` 或 `↑` - 上一页
 - `/` - 搜索服务
 - `ESC` - 清除搜索
 - `q` - 退出
+
+### 列出已安装的服务
+```bash
+ssmanger list-services
+```
+
+列出所有已安装的服务（读取 plist 文件）。
 
 ### 启动服务
 ```bash

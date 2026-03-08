@@ -16,10 +16,11 @@ Sources/ssmanger/
 │   ├── Service.swift      # Service list model
 │   └── ServiceDetail.swift # Detailed service information model
 └── Renderer/
-    ├── TableRenderer.swift   # Interactive service list UI
-    ├── StatusRenderer.swift  # Service status detail UI
-    ├── ServiceCreator.swift  # Interactive service creation UI
-    └── LogRenderer.swift     # Service log display UI
+    ├── TableRenderer.swift      # Interactive service list UI
+    ├── StatusRenderer.swift     # Service status detail UI
+    ├── ServiceCreator.swift     # Interactive service creation UI
+    ├── LogRenderer.swift        # Service log display UI
+    └── ServiceListRenderer.swift # Installed services list UI
 ```
 
 ## Key Design Decisions

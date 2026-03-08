@@ -21,6 +21,8 @@ struct SSManager {
             ServiceManager.execute(command, service: service)
         case "list":
             ServiceManager.listAll()
+        case "list-services":
+            ServiceManager.listServices()
         case "add":
             guard args.count >= 3 else {
                 print("错误: 需要指定服务名称")
@@ -53,7 +55,8 @@ struct SSManager {
           stop <service>     停止服务
           restart <service>  重启服务
           status <service>   查看服务状态
-          list               列出所有服务
+          list               列出所有运行中的服务
+          list-services      列出所有已安装的服务
           add <service>      添加新服务
           logs <service>     查看服务日志
         """)
