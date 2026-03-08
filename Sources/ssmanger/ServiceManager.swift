@@ -2,21 +2,17 @@ import Foundation
 
 struct ServiceManager {
     static func execute(_ command: String, service: String) {
-        let args: [String]
         let plistPath = getServicePath(service)
         let domainTarget = getDomainTarget()
         let serviceTarget = getServiceTarget(service)
 
         switch command {
         case "start":
-            args = ["bootstrap", domainTarget, plistPath]
-            runLaunchctl(args)
+            ServiceActionRenderer.start(service, plistPath: plistPath, domainTarget: domainTarget)
         case "stop":
-            args = ["bootout", serviceTarget]
-            runLaunchctl(args)
+            ServiceActionRenderer.stop(service, serviceTarget: serviceTarget)
         case "restart":
-            args = ["kickstart", "-k", serviceTarget]
-            runLaunchctl(args)
+            ServiceActionRenderer.restart(service, serviceTarget: serviceTarget)
         case "status":
             showStatus(service)
         default:

@@ -16,11 +16,12 @@ Sources/ssmanger/
 │   ├── Service.swift      # Service list model
 │   └── ServiceDetail.swift # Detailed service information model
 └── Renderer/
-    ├── TableRenderer.swift      # Interactive service list UI
-    ├── StatusRenderer.swift     # Service status detail UI
-    ├── ServiceCreator.swift     # Interactive service creation UI
-    ├── LogRenderer.swift        # Service log display UI
-    └── ServiceListRenderer.swift # Installed services list UI
+    ├── TableRenderer.swift         # Interactive service list UI
+    ├── StatusRenderer.swift        # Service status detail UI
+    ├── ServiceCreator.swift        # Interactive service creation UI
+    ├── LogRenderer.swift           # Service log display UI
+    ├── ServiceListRenderer.swift   # Installed services list UI
+    └── ServiceActionRenderer.swift # Service start/stop/restart with error feedback
 ```
 
 ## Key Design Decisions
@@ -83,6 +84,22 @@ Interactive plist file generation with `ServiceCreator`:
 - Label, ProgramArguments (required)
 - RunAtLoad, KeepAlive (default: true)
 - StandardOutPath, StandardErrorPath (optional)
+
+### Service Action Rendering (start/stop/restart commands)
+`ServiceActionRenderer` handles service lifecycle operations with intelligent error feedback:
+
+**Exit Code Mapping**:
+- Maps launchctl exit codes to user-friendly error messages
+- Exit code 3: Service not found or not running
+- Exit code 5: Service already running/disabled (start) or I/O error
+- Exit code 37/150: Permission denied (suggests sudo)
+- Exit code 78: Configuration error or invalid plist
+- Exit code 113: Service not found or already unloaded
+
+**Benefits**:
+- Immediate, precise error diagnosis instead of generic suggestions
+- Reduces troubleshooting time for users
+- Based on official launchctl behavior documentation
 
 ## Development Guidelines
 
