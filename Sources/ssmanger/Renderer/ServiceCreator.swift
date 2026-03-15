@@ -66,7 +66,7 @@ struct ServiceCreator {
     }
 
     private static func generatePlist(label: String, program: String, args: String, stdOutPath: String?, stdErrPath: String?) -> String {
-        let builder = PlistBuilder().header().plist(0) { b in
+        return PlistBuilder().header().plist(0) { b in
             b.dict(0) { b in
                 b.key("Label", 1).string(label, 1)
                 b.key("ProgramArguments", 1).array(1) { b in
@@ -86,7 +86,6 @@ struct ServiceCreator {
                     b.key("StandardErrorPath", 1).string(stdErr, 1)
                 }
             }
-        }
-        return builder.build()
+        }.build()
     }
 }

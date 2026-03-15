@@ -23,6 +23,10 @@ Sources/ssmanger/
     ├── LogRenderer.swift           # Service log display UI
     ├── ServiceListRenderer.swift   # Installed services list UI
     └── ServiceActionRenderer.swift # Service start/stop/restart with error feedback
+
+Tests/ssmangerTests/
+├── test_plist_builder.swift # PlistBuilder DSL tests
+└── test.swift               # Swift Testing framework examples and demos
 ```
 
 ## Key Design Decisions
@@ -118,9 +122,33 @@ PlistBuilder().header().plist(0) { b in
 - Reduces troubleshooting time for users
 - Based on official launchctl behavior documentation
 
+## Testing
+
+The project uses Swift Testing framework for unit tests.
+
+**Test Structure**:
+- `Tests/ssmangerTests/test_plist_builder.swift` - Tests for PlistBuilder DSL
+- `Tests/ssmangerTests/test.swift` - Comprehensive Swift Testing examples and demos
+
+**Running Tests**:
+```bash
+swift test
+```
+
+**Test Configuration**:
+- Configured in `Package.swift` with `testTarget` dependency on main executable
+- Uses Swift Testing framework (not XCTest)
+- Tests use `@Test` macro, `#expect` assertions, and `@Suite` for organization
+
+**PlistBuilder Tests**:
+- Validates closure-based API generates correct XML
+- Tests method chaining and nested structures
+- Ensures proper indentation and formatting
+
 ## Development Guidelines
 
 - Keep code minimal and focused
 - Use ANSI-aware padding for all formatted output
 - Test alignment with colored text
 - Follow existing commit message style (feat/fix/refactor)
+- Run `swift test` before committing changes
