@@ -43,9 +43,15 @@ struct Box: Component {
     private func generateTopBorder(boxWidth: Int, chars: (topLeft: String, topRight: String, bottomLeft: String, bottomRight: String, horizontal: String, vertical: String)) -> String {
         let border: String
         if let title = title {
-            let coloredTitle = style.titleColor != nil ? title.styled(style.titleColor!) : title
+            // 计算标题可用宽度：boxWidth - "┌─ " - " ┐" = boxWidth - 5
+            let availableTitleWidth = max(0, boxWidth - 5)
+
+            // 截断标题
+            let truncatedTitle = title.truncate(to: availableTitleWidth)
+            let coloredTitle = style.titleColor != nil ? truncatedTitle.styled(style.titleColor!) : truncatedTitle
+
             let titlePart = "\(chars.horizontal) \(coloredTitle) "
-            let titlePartWidth = 2 + title.displayWidth + 1
+            let titlePartWidth = 2 + truncatedTitle.displayWidth + 1
             let remainingWidth = max(0, boxWidth - titlePartWidth - 2)
             border = chars.topLeft + titlePart + String(repeating: chars.horizontal, count: remainingWidth) + chars.topRight
         } else {

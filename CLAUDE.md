@@ -16,16 +16,28 @@ Sources/ssmanger/
 │   ├── Service.swift       # Service list model
 │   ├── ServiceDetail.swift # Detailed service information model
 │   └── PlistBuilder.swift  # DSL for generating plist XML with closure-based API
-└── Renderer/
-    ├── TableRenderer.swift         # Interactive service list UI
-    ├── StatusRenderer.swift        # Service status detail UI
-    ├── ServiceCreator.swift        # Interactive service creation UI
-    ├── LogRenderer.swift           # Service log display UI
-    ├── ServiceListRenderer.swift   # Installed services list UI
-    └── ServiceActionRenderer.swift # Service start/stop/restart with error feedback
+├── Renderer/
+│   ├── TableRenderer.swift         # Interactive service list UI
+│   ├── StatusRenderer.swift        # Service status detail UI
+│   ├── ServiceCreator.swift        # Interactive service creation UI
+│   ├── LogRenderer.swift           # Service log display UI
+│   ├── ServiceListRenderer.swift   # Installed services list UI
+│   └── ServiceActionRenderer.swift # Service start/stop/restart with error feedback
+└── UI/
+    ├── Core/
+    │   ├── Terminal.swift          # Terminal size detection and resize callbacks
+    │   ├── Component.swift         # UI component protocol
+    │   ├── Size.swift              # Size definition (fixed, percent, auto)
+    │   ├── BoxStyle.swift          # Box styling (border, alignment, colors)
+    │   ├── StringExtensions.swift  # String utilities (truncate, display width)
+    │   └── ResponsiveView.swift    # Auto re-render on terminal resize
+    └── Components/
+        ├── Box.swift               # Border container with styling support
+        └── ResponsiveBox.swift     # Box with percentage-based width
 
 Tests/ssmangerTests/
 ├── test_plist_builder.swift # PlistBuilder DSL tests
+├── test_ui.swift            # UI system tests
 └── test.swift               # Swift Testing framework examples and demos
 ```
 
@@ -122,12 +134,49 @@ PlistBuilder().header().plist(0) { b in
 - Reduces troubleshooting time for users
 - Based on official launchctl behavior documentation
 
+### Responsive UI System
+
+A modern terminal UI framework with responsive layout and styling support.
+
+**Core Components**:
+- `Terminal` - Manages terminal size detection and SIGWINCH signal handling
+- `Component` protocol - Base interface for all UI components
+- `ResponsiveView` - Automatically re-renders components on terminal resize
+- `Size` enum - Supports fixed, percentage, and auto sizing
+
+**Box Component**:
+Full-featured container with extensive styling options:
+- Border styles: single (`┌─┐`), double (`╔═╗`), rounded (`╭─╮`), bold (`┏━┓`)
+- Alignment: left, center, right
+- Customizable padding and colors (border, title)
+- Automatic truncation with `...` for overflow
+- Multi-line content support
+
+**CJK Character Support**:
+Proper handling of Chinese/Japanese/Korean characters:
+- `displayWidth` calculates actual terminal width (CJK = 2 chars)
+- `visibleDisplayWidth` handles both ANSI colors and CJK
+- Ensures perfect border alignment with mixed ASCII/CJK text
+
+**Responsive Layout**:
+```swift
+ResponsiveBox(
+    content: "内容",
+    width: .percent(0.5),  // 50% of terminal width
+    style: BoxStyle(border: .double, alignment: .center)
+)
+```
+
+**Test Command**:
+Run `ssmanger test_ui` to see responsive layout demo with terminal resize support.
+
 ## Testing
 
 The project uses Swift Testing framework for unit tests.
 
 **Test Structure**:
 - `Tests/ssmangerTests/test_plist_builder.swift` - Tests for PlistBuilder DSL
+- `Tests/ssmangerTests/test_ui.swift` - UI system tests (18 tests)
 - `Tests/ssmangerTests/test.swift` - Comprehensive Swift Testing examples and demos
 
 **Running Tests**:
@@ -139,6 +188,13 @@ swift test
 - Configured in `Package.swift` with `testTarget` dependency on main executable
 - Uses Swift Testing framework (not XCTest)
 - Tests use `@Test` macro, `#expect` assertions, and `@Suite` for organization
+
+**UI System Tests**:
+- Terminal size detection and resize callbacks
+- Box component rendering (borders, alignment, colors)
+- String truncation with ANSI colors and CJK characters
+- Responsive layout with percentage-based sizing
+- Display width calculation for mixed ASCII/CJK text
 
 **PlistBuilder Tests**:
 - Validates closure-based API generates correct XML
